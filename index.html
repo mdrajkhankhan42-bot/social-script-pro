@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social Script Pro</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+    textarea { width: 100%; height: 100px; margin-bottom: 10px; }
+    button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    #output { margin-top: 20px; white-space: pre-wrap; background: #f4f4f4; padding: 15px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Social Script Pro</h1>
+  <textarea id="prompt" placeholder="এখানে আপনার কনটেন্টের বিষয় লিখুন..."></textarea>
+  <br>
+  <button onclick="generateContent()">কন্টেন্ট জেনারেট করুন</button>
+  <div id="output"></div>
+
+  <script>
+    async function generateContent() {
+      const prompt = document.getElementById('prompt').value;
+      const output = document.getElementById('output');
+      output.innerText = 'জেনারেট হচ্ছে...';
+
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+        const data = await response.json();
+        output.innerText = data.result || data.error || 'কোনো আউটপুট পাওয়া যায়নি';
+      } catch (err) {
+        output.innerText = 'এরর: ' + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
