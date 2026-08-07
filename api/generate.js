@@ -19,8 +19,8 @@ export default async function handler(req, res) {
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    // নির্ভরযোগ্য ও সক্রিয় মডেল ব্যবহার
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+    // স্টেবল মডেল আইডি
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
