@@ -5,37 +5,96 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Social Script Pro</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
-    textarea { width: 100%; height: 100px; margin-bottom: 10px; }
-    button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
-    #output { margin-top: 20px; white-space: pre-wrap; background: #f4f4f4; padding: 15px; border-radius: 5px; }
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; background: #f9f9f9; }
+    .form-group { margin-bottom: 15px; }
+    label { font-weight: bold; display: block; margin-bottom: 5px; }
+    textarea, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+    textarea { height: 100px; }
+    button { padding: 12px 20px; font-size: 16px; background-color: #0070f3; color: white; border: none; border-radius: 5px; cursor: pointer; width: 100%; }
+    button:hover { background-color: #0051a2; }
+    #resultContainer { background: white; padding: 15px; border-radius: 5px; border: 1px solid #ddd; }
   </style>
 </head>
 <body>
+
   <h1>Social Script Pro</h1>
-  <textarea id="prompt" placeholder="এখানে আপনার কনটেন্টের বিষয় লিখুন..."></textarea>
-  <br>
-  <button onclick="generateContent()">কন্টেন্ট জেনারেট করুন</button>
-  <div id="output"></div>
+
+  <div class="form-group">
+    <label for="prompt">আপনার টপিক বা ধারণা লিখুন:</label>
+    <textarea id="prompt" placeholder="যেমন: চা নিয়ে একটি সুন্দর সোশ্যাল মিডিয়া পোস্ট..."></textarea>
+  </div>
+
+  <div class="form-group">
+    <label for="platform">কন্টেন্টের ধরন বেছে নিন:</label>
+    <select id="platform">
+      <option value="Facebook Post">Facebook Post</option>
+      <option value="YouTube Script">YouTube Video Script</option>
+      <option value="Instagram Reel Hook & Caption">Instagram Reel Caption</option>
+      <option value="Promotional Ad Copy">Promotional Ad Copy</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="tone">কন্টেন্টের টোন (Tone):</label>
+    <select id="tone">
+      <option value="Professional & Informative">Professional</option>
+      <option value="Engaging & Casual">Casual / Friendly</option>
+      <option value="Persuasive & Sales-oriented">Sales / Promotional</option>
+      <option value="Humorous & Funny">Humorous</option>
+    </select>
+  </div>
+
+  <button id="generateBtn" onclick="generateContent()">কন্টেন্ট জেনারেট করুন</button>
+
+  <div id="resultContainer" style="display:none; margin-top: 20px;">
+    <h3>জেনারেট হওয়া কন্টেন্ট:</h3>
+    <div id="output" style="white-space: pre-wrap; background: #f4f4f4; padding: 15px; border-radius: 5px;"></div>
+    <button onclick="copyToClipboard()" style="margin-top: 10px; background-color: #28a745;">Copy Content</button>
+  </div>
 
   <script>
     async function generateContent() {
-      const prompt = document.getElementById('prompt').value;
-      const output = document.getElementById('output');
-      output.innerText = 'জেনারেট হচ্ছে...';
+      const promptInput = document.getElementById('prompt').value;
+      const platform = document.getElementById('platform').value;
+      const tone = document.getElementById('tone').value;
+      const outputDiv = document.getElementById('output');
+      const resultContainer = document.getElementById('resultContainer');
+
+      if (!promptInput) {
+        alert("অনুগ্রহ করে একটি টপিক লিখুন!");
+        return;
+      }
+
+      outputDiv.innerText = "কন্টেন্ট তৈরি হচ্ছে, একটু অপেক্ষা করুন...";
+      resultContainer.style.display = "block";
+
+      const finalPrompt = `Create a ${platform} with a ${tone} tone about the following topic: "${promptInput}". Make it well-structured with appropriate emojis and hashtags.`;
 
       try {
         const response = await fetch('/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt })
+          body: JSON.stringify({ prompt: finalPrompt })
         });
+
         const data = await response.json();
-        output.innerText = data.result || data.error || 'কোনো আউটপুট পাওয়া যায়নি';
+        if (data.result) {
+          outputDiv.innerText = data.result;
+        } else {
+          outputDiv.innerText = "ত্রুটি: " + (data.error || "কন্টেন্ট জেনারেট করা সম্ভব হয়নি।");
+        }
       } catch (err) {
-        output.innerText = 'এরর: ' + err.message;
+        outputDiv.innerText = "সার্ভারে যোগাযোগ করতে ব্যর্থ হয়েছে।";
       }
     }
+
+    function copyToClipboard() {
+      const text = document.getElementById('output').innerText;
+      navigator.clipboard.writeText(text);
+      alert("কন্টেন্ট কপি হয়েছে!");
+    }
   </script>
+
 </body>
 </html>
+
