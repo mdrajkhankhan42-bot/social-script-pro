@@ -1,5 +1,3 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -8,7 +6,7 @@ export default async function handler(req, res) {
   const { prompt } = req.body;
 
   if (!prompt) {
-    return res.status(400).json({ error: 'প্রম্পট দেওয়া হয়নি।' });
+    return res.status(400).json({ error: 'প্রম্পট লিখুন।' });
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -18,12 +16,30 @@ export default async function handler(req, res) {
   }
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }]
+            }
+          ]
+        })
+      }
+    );
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error?.message || 'Gemini API থেকে সমস্যা দেখা দিয়েছে।');
+    }
+
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'কোনো আউটপুট পাওয়া যায়নি।';
 
     return res.status(200).json({ result: text });
   } catch (error) {
