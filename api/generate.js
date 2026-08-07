@@ -12,23 +12,18 @@ export default async function handler(req, res) {
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'GEMINI_API_KEY পাওয়া যায়নি।' });
+    return res.status(500).json({ error: ' GEMINI_API_KEY পাওয়া যায়নি। Vercel এপিআই কী নাম সঠিক আছে কিনা চেক করুন।' });
   }
 
   try {
+    // সরাসরি REST API কল
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [
-            {
-              parts: [{ text: prompt }]
-            }
-          ]
+          contents: [{ parts: [{ text: prompt }] }]
         })
       }
     );
@@ -36,16 +31,20 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error?.message || 'Gemini API থেকে সমস্যা দেখা দিয়েছে।');
+      // এপিআই-এর আসল এরর দেখার জন্য
+      return res.status(500).json({ 
+        error: `Google API Error (${response.status}): ${data.error?.message || JSON.stringify(data)}` 
+      });
     }
 
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'কোনো আউটপুট পাওয়া যায়নি।';
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!text) {
+      return res.status(500).json({ error: "কোনো টেক্সট পাওয়া যায়নি।", rawResponse: data });
+    }
 
     return res.status(200).json({ result: text });
   } catch (error) {
-    console.error("Gemini API Error:", error);
-    return res.status(500).json({
-      error: error.message || "Gemini API-তে সমস্যা হয়েছে।"
-    });
+    return res.status(500).json({ error: `Server Error: ${error.message}` });
   }
 }
