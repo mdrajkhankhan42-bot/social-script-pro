@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   const { prompt } = req.body;
 
   if (!prompt) {
-    return res.status(400).json({ error: 'প্রম্পট লিখুন।' });
+    return res.status(400).json({ error: 'প্রম্পট দেওয়া হয়নি।' });
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -19,7 +19,6 @@ export default async function handler(req, res) {
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    // স্টেবল মডেল আইডি
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     const result = await model.generateContent(prompt);
