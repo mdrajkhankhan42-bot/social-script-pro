@@ -6,13 +6,13 @@ export default async function handler(req, res) {
   const { prompt } = req.body;
 
   if (!prompt) {
-    return res.status(400).json({ error: 'প্রম্পট লিখুন।' });
+    return res.status(400).json({ error: 'প্রম্পট দিন।' });
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'GEMINI_API_KEY পাওয়া যায়নি।' });
+    return res.status(500).json({ error: 'API Key সেট করা হয়নি।' });
   }
 
   try {
@@ -20,15 +20,9 @@ export default async function handler(req, res) {
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [
-            {
-              parts: [{ text: prompt }]
-            }
-          ]
+          contents: [{ parts: [{ text: prompt }] }]
         })
       }
     );
@@ -36,18 +30,12 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      return res.status(500).json({ 
-        error: data.error?.message || 'Gemini API থেকে সমস্যা দেখা দিয়েছে।' 
-      });
+      return res.status(500).json({ error: data.error?.message || 'API Error' });
     }
 
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'কোনো আউটপুট পাওয়া যায়নি।';
-
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'কোনো টেক্সট পাওয়া যায়নি।';
     return res.status(200).json({ result: text });
   } catch (error) {
-    console.error("Gemini API Error:", error);
-    return res.status(500).json({
-      error: error.message || "Gemini API-তে সমস্যা হয়েছে।"
-    });
+    return res.status(500).json({ error: error.message });
   }
 }
