@@ -19,6 +19,7 @@ export default async function handler(req, res) {
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
+    // গুগল জেমিনাই-এর আপডেট করা মডেল নাম
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const result = await model.generateContent(prompt);
